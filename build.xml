@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="linkTracker" default="all" basedir=".">
+
+	<!-- Build -->
+
+	<property file="build.properties" />
+	<property name="ROOT_DIR" value="." />
+	<property name="SRC_DIR" value="${ROOT_DIR}/src" />
+	<property name="DIST_DIR" value="${ROOT_DIR}/dist" />
+	<property name="YUI_JAR" value="build/lib/yuicompressor-2.4.2.jar" />
+
+	<!-- Targets -->
+
+	<target name="cleanAll">
+		<delete dir="${DIST_DIR}" />
+	</target>
+	
+	<target name="setup">
+		<mkdir dir="${DIST_DIR}" />
+	</target>
+	
+	<target name="cleanTmp"></target>
+
+	<target name="dist" depends="cleanAll, setup, cleanAll">
+		<echo message="Compressing"/>
+		<apply executable="java" parallel="false" failonerror="true">
+			<arg line="-jar"/>
+			<arg path="${YUI_JAR}"/>
+			<arg value="--preserve-semi" />
+			<srcfile/>
+			<fileset dir="${SRC_DIR}" includes="**/*.js,**/*.css"/>
+			<redirector>
+				<outputmapper type="glob" from="*" to="${DIST_DIR}/*" />
+			</redirector>
+		</apply>
+	</target>
+	
+	<target name="all" depends="dist, cleanTmp">
+	</target>
+
+</project>
