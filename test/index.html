@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Link Tracker Tests</title>
+	<script type="text/javascript" src="includes/manualtests.js"></script>
+	<script type="text/javascript">
+		document.write(
+			'<script type="text/javascript" src="' + manualTests.config.linkTrackerPath + '"><' + '/script>'
+		);
+	</script>
+</head>
+
+<body>
+	<h1>Link Tracker Tests</h1>
+	
+	<h2>Typical Usage</h2>
+	
+	<ul>
+		<li>Click on links in the document and review information in the log</li>
+		<li>All links in the document will be logged</li>
+		<li>Middle &amp; left clicks will be logged, right clicks will not</li>
+	</ul>
+	
+	<!-- output visual / interactive parts of your test here -->
+	
+	<script type="text/javascript" class="showSrc">
+		function urlRewriter(linkElm, button, redirect) {
+			manualTests.log(linkElm.href + ' ' + button + ' ' + (redirect ? '304' : '204'));
+			return 'http://www.jakearchibald.com/tracking?url=' + encodeURIComponent(linkElm.href) + '&redirect=' + (redirect-0);
+		}
+	
+		new tracking.LinkTracker(urlRewriter);
+	</script>
+	
+	<h2>Ballpool</h2>
+	
+	<p>Here are some HTML elements to click on to test the link tracker</p>
+	
+	<div>
+		<p>Blah blah blah <a href="http://www.google.com">blah</a> blah</p>
+	</div>
+	
+	<p>Here is <a href="http://www.bbc.co.uk"><span>another <span>link</span></span></a></p>
+	
+	<h2>Notes:</h2>
+	
+	<ul>
+		<li>
+			Firefox extension 'All-in-one gestures' prevents detecting middle &amp; right clicks,
+			other extensions may do the same.
+		</li>
+		<li>
+			What if people swap mouse buttons?
+		</li>
+		<li>
+			Add option to prevent logging same url x times per page
+		</li>
+		<li>
+			Test with floated elements inside the anchor
+		</li>
+		<li>
+			Test with abs positioned links and abs positioned elms inside links
+		</li>
+		<li>
+			Test with images inside links
+		</li>
+	</ul>
+	
+	<script type="text/javascript">manualTests.showSrc();</script>
+	<script type="text/javascript">manualTests.log('Logging enabled');</script>
+</body>
+</html>
