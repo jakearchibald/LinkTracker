@@ -106,7 +106,9 @@ var tracking = (function() {
 		var button = this._isKey ? 'key' : buttons[this._mUpBtn],
 			linkElm,
 			trackUrl,
-			trackingType;
+			trackingType,
+			resetFunction,
+			originalHref;
 		
 		// bail if the last action wasn't a key or left click
 		if ( !(this._isKey || this._mUpBtn === 0) ) { return; }
@@ -123,6 +125,15 @@ var tracking = (function() {
 		
 		// get new url
 		trackUrl = this._bUrl(linkElm, button, true);
+		originalHref = attr(linkElm, 'href');
+		
+		resetFunction = function() {
+			if (linkElm) {
+				attr(linkElm, 'href', originalHref);
+				linkElm._rewritten = 0;
+			}
+			resetFunction = undefined;
+		}
 		
 		// if newUrl is false, don't track
 		if (trackUrl) {
@@ -133,6 +144,7 @@ var tracking = (function() {
 				// replace the current link
 				linkElm.href = trackUrl;
 				linkElm._rewritten = 1;
+				setTimeout(resetFunction, 100);
 			}
 		}
 	}
@@ -205,6 +217,20 @@ var tracking = (function() {
 		
 		// pages to somewhere within this page should be tracked async
 		return isThisPage ? 2 : 1;
+	}
+	
+	// get / set attributes
+	// val is optional, current value will be returned if ommited
+	function attr(elm, attrName, val) {
+		if (typeof val == 'undefined') {
+			if (tracking.isIe) {
+				try {
+					return elm.getAttribute(attrName, 2)
+				} catch (e) {}
+			}
+			return elm.getAttribute(attrName);
+		}
+		elm.setAttribute(attrName, val);
 	}
 	
 	// make an async request 
