@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html id="top">
 <head>
 	<title>Link Tracker Tests</title>
 	<script type="text/javascript" src="includes/manualtests.js"></script>
@@ -28,7 +28,7 @@
 			<a href="#" id="test4">test4</a>,
 			<a href="#" id="test5">test5</a>
 			<ol>
-				<li><a href="#" id="refresh">Refresh the page</a></li>
+				<li>Refresh the page</li>
 				<li>Click a test link above</li>
 				<li>Click each of the links below using the right mouse button</li>
 				<li>Click each of the links below using the middle mouse button (page will open in a background tab)</li>
@@ -45,13 +45,13 @@
 		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
 		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
 		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
-		<li><a href="#top" target="hiddenIframe">Internal link</a></li>
+		<li><a href="#top">Internal link</a></li>
 		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
 		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
 		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
 	</ul>
 	
-	<iframe name="hiddenIframe" style="height:0;width:0;visibility:hidden"></iframe>
+	<iframe name="hiddenIframe" style="height:0;width:0;visibility:hidden;position:absolute"></iframe>
 	
 	<script type="text/javascript">		
 		var tests = ['test1', 'test2', 'test3', 'test4', 'test5'];
@@ -63,11 +63,6 @@
 				delete img.onerror;
 			}
 			img.src = 'tracker.php?action=reset';
-			return false;
-		}
-		
-		document.getElementById('refresh').onclick = function() {
-			location.search = Math.random();
 			return false;
 		}
 		
@@ -296,9 +291,15 @@
 		<li>
 			Test links to https &amp; ftp
 		</li>
+		<li>
+			Need to fix localhost tests
+		</li>
+		<li>
+			Add in setAttribute / getAttribute for href, revert links after 50ms?
+		</li>
 	</ul>
 	
 	<script type="text/javascript">manualTests.showSrc();</script>
-	<script type="text/javascript">manualTests.log('Logging enabled');</script>
+	<script type="text/javascript">manualTests.log('Logging enabled'); test1();</script>
 </body>
 </html>
