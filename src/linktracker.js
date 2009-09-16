@@ -45,10 +45,12 @@ var tracking = (function() {
 			Middle clicks open links in a background tab in the majority of browsers
 			that support tabbed browsing. If this option is true, each middle click
 			on links will be tracked.
-		@param {Boolean} [opts.trackHostLinks=false] Track links to the current host?
-			Should links pointing the same host & port as the current page be tracked?
-		@param {Boolean} [opts.trackPageLinks=false] Track links pointing within the current page?
-			These links end in # followed by an optional ident, eg http://www.bbc.co.uk#blq-main
+		@param {Number} [opts.trackingLevel=0] What kind of links should be tracked?
+			0 - Track only links to external urls
+			1 - Track external links & links pointing the same host & port
+			    as the current page
+			2 - Track all links, including those pointing to anchors / ids
+			    within the current page
 		@param {String[]} [opts.protocols] Which protocols should be logged?
 			By default, the following protocols are logged: ['http', 'https', 'ftp']
 	
@@ -127,9 +129,10 @@ var tracking = (function() {
 			if (trackingType == 2) {
 				makeRequest(trackUrl);
 			}
-			else {
+			else if (!linkElm._rewritten) {
 				// replace the current link
 				linkElm.href = trackUrl;
+				linkElm._rewritten = 1;
 			}
 		}
 	}
@@ -186,15 +189,16 @@ var tracking = (function() {
 			thisProtocol  = loc.protocol.slice(0,-1),
 			isHttpOrHttps = thisProtocol == 'http' || thisProtocol == 'https',
 			isThisHost    = thisProtocol == protocol && loc.host == host,
-			isThisPage    = isThisHost && (loc.pathname + loc.search) == request;
+			isThisPage    = isThisHost && (loc.pathname + loc.search) == request,
+			trackingLevel = linkTracker._o.trackingLevel;
 		
 		if (
 			// not tracking this protocol?
 			(linkTracker._p.indexOf(' ' + protocol + ' ') == -1)
 			// not tracking this host?
-			|| (isHttpOrHttps && isThisHost && !linkTracker._o.trackHostLinks)
+			|| (isHttpOrHttps && isThisHost && trackingLevel < 1)
 			// not tracking this page?
-			|| (isHttpOrHttps && isThisPage && !linkTracker._o.trackPageLinks)
+			|| (isHttpOrHttps && isThisPage && trackingLevel < 2)
 		) {
 			return 0;
 		}
@@ -258,8 +262,7 @@ var tracking = (function() {
 				container: document,
 				trackRightClicks: false,
 				trackMiddleClicks: true,
-				trackHostLinks: false,
-				trackPageLinks: false,
+				trackingLevel: 0,
 				protocols: defaultProtocols
 			},
 			i;

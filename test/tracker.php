@@ -17,10 +17,9 @@ function addTrackingEntry() {
 	$url      = useIfSet($_GET['url'], 'Unknown URL');
 	$button   = useIfSet($_GET['button'], 'Unknown Button');
 	$redirect = useIfSet($_GET['redirect'], '0') == '1';
+	$isRedir  = $redirect ? '1' : '0';
 	$logRef   = useIfSet($_GET['logref'], '0');
-	$stamp    = date('Y-m-d H:i:s');
-	$logMsg   = "[#$logRef] [$stamp] $url (button: $button)\n",
-	
+	$logMsg   = "[#$logRef] $url (button: $button, redirect: $isRedir)\n";
 	
 	file_put_contents( $trackingFile, $logMsg, FILE_APPEND );
 	

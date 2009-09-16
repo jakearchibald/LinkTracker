@@ -103,7 +103,7 @@ var manualTests = (function() {
 		// todo: move this to stylesheet
 		logElm = document.createElement("div");
 		logElm.style.position = 'fixed';
-		logElm.style.width = '200px';
+		logElm.style.width = '400px';
 		logElm.style.height = '200px';
 		logElm.style.border = '1px solid #ccc';
 		logElm.style.padding = '10px';
@@ -112,6 +112,7 @@ var manualTests = (function() {
 		logElm.style.top = '0';
 		logElm.style.right = '0';
 		logElm.style.background = '#eee';
+		logElm.style.font = 'normal 0.9em monospace';
 		
 		// wait for the dom to be ready
 		var prev = window.onload;

@@ -14,13 +14,48 @@
 <body>
 	<h1>Link Tracker Tests</h1>
 	
-	<h2>Setup</h2>
+	<h2>Test</h2>
+	
+	<p>To test the system, do the following:</p>
+	
+	<ol>
+		<li><a href="#" id="deleteLogs">Delete log.txt</a></li>
+		<li>
+			For each of these tests (in order):
+			<a href="#" id="test1">test1</a>,
+			<a href="#" id="test2">test2</a>,
+			<a href="#" id="test3">test3</a>,
+			<a href="#" id="test4">test4</a>,
+			<a href="#" id="test5">test5</a>
+			<ol>
+				<li><a href="#" id="refresh">Refresh the page</a></li>
+				<li>Click a test link above</li>
+				<li>Click each of the links below using the right mouse button</li>
+				<li>Click each of the links below using the middle mouse button (page will open in a background tab)</li>
+				<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
+			</ol>
+		</li>
+		<li>
+			Repeat the test for 'test1', but rather than press mouse buttons,
+			tab through the links pressing enter on each
+		</li>
+	</ol>
 	
 	<ul>
-		<li><a href="#" id="deleteLogs">Delete Logs</a></li>
+		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="#top" target="hiddenIframe">Internal link</a></li>
+		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
 	</ul>
 	
-	<script type="text/javascript">
+	<iframe name="hiddenIframe" style="height:0;width:0;visibility:hidden"></iframe>
+	
+	<script type="text/javascript">		
+		var tests = ['test1', 'test2', 'test3', 'test4', 'test5'];
+		
 		document.getElementById('deleteLogs').onclick = function() {
 			var img = new Image();
 			img.onerror = function() {
@@ -30,44 +65,212 @@
 			img.src = 'tracker.php?action=reset';
 			return false;
 		}
+		
+		document.getElementById('refresh').onclick = function() {
+			location.search = Math.random();
+			return false;
+		}
+		
+		var i = tests.length;
+		while (i--) {
+			document.getElementById(tests[i]).onclick = function() {
+				window[ this.id ]();
+				return false;
+			}
+		}
 	</script>
 	
-	<h2>Typical Usage</h2>
+	<h2>Check Results</h2>
 	
-	<ul>
-		<li>Click on links in the document and review information in the log</li>
-		<li>All links in the document will be logged</li>
-		<li>Middle &amp; left clicks will be logged, right clicks will not</li>
-	</ul>
+	<ol>
+		<li>Run ALL tests above</li>
+		<li><a href="#" id="checkResults">Check Results</a></li>
+		<li>See logger for results</li>
+	</ol>
 	
-	<script type="text/javascript" class="showSrc">
-		function urlRewriter(linkElm, button, redirect) {
-			manualTests.log(linkElm.href + ' ' + button + ' ' + (redirect ? '304' : '204'));
-			return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
-				+ '&redirect=' + (redirect-0)
-				+ '&button=' + button
-				+ '&logref=1';
+	<script type="text/javascript">
+		function xhrRequest(url, callback) {
+			var req;
+			
+			if (window.ActiveXObject) {
+				req = new ActiveXObject("MSXML2.XMLHTTP");
+			}
+			else {
+				req = new XMLHttpRequest();
+			}
+			
+			req.open('GET', url, true);
+			
+			req.onreadystatechange = function () {
+				if (req.readyState != 4) { return; }
+				callback(req);
+				req.onreadystatechange = new Function;
+			}
+			req.send();
+		}
+		
+		document.getElementById('checkResults').onclick = function() {
+			xhrRequest('log.txt', function(req) {
+				var results = req.responseText.split(/^/m),
+					expectedResults = expectedOutput.split(/^/m),
+					len = Math.max(results.length, expectedResults.length),
+					i = 0;
+					
+				for (; i < len; i++) {
+					if (results[i] != expectedResults[i]) {
+						manualTests.log('Mismatch on line ' + (i+1) + ', expected:');
+						manualTests.log(expectedResults[i] || '--blank--');
+						manualTests.log('But got:');
+						manualTests.log(results[i] || '--blank--');
+						return;
+					}
+				}
+				manualTests.log('Test passed!');
+			})
+			return false;
+		}
+		
+		var expectedOutput = '[#1] http://www.google.com/ (button: middle, redirect: 0)\n\
+[#1] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
+[#1] https://www.cia.gov/ (button: middle, redirect: 0)\n\
+[#1] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
+[#1] http://www.google.com/ (button: left, redirect: 1)\n\
+[#1] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#1] https://www.cia.gov/ (button: left, redirect: 1)\n\
+[#1] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
+[#2] http://www.google.com/ (button: right, redirect: 0)\n\
+[#2] http://www.bbc.co.uk/#blq-main (button: right, redirect: 0)\n\
+[#2] javascript:void(0) (button: right, redirect: 0)\n\
+[#2] https://www.cia.gov/ (button: right, redirect: 0)\n\
+[#2] ftp://ftp.mozilla.org/ (button: right, redirect: 0)\n\
+[#2] http://www.google.com/ (button: left, redirect: 1)\n\
+[#2] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#2] javascript:void(0) (button: left, redirect: 1)\n\
+[#2] https://www.cia.gov/ (button: left, redirect: 1)\n\
+[#2] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
+[#3] http://www.google.com/ (button: middle, redirect: 0)\n\
+[#3] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
+[#3] http://localhost/linktracker/test/empty.txt (button: middle, redirect: 0)\n\
+[#3] https://www.cia.gov/ (button: middle, redirect: 0)\n\
+[#3] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
+[#3] http://www.google.com/ (button: left, redirect: 1)\n\
+[#3] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#3] http://localhost/linktracker/test/empty.txt (button: left, redirect: 1)\n\
+[#3] https://www.cia.gov/ (button: left, redirect: 1)\n\
+[#3] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
+[#4] http://www.google.com/ (button: middle, redirect: 0)\n\
+[#4] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
+[#4] http://localhost/linktracker/test/empty.txt (button: middle, redirect: 0)\n\
+[#4] http://localhost/linktracker/test/#top (button: middle, redirect: 0)\n\
+[#4] https://www.cia.gov/ (button: middle, redirect: 0)\n\
+[#4] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
+[#4] http://www.google.com/ (button: left, redirect: 1)\n\
+[#4] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#4] http://localhost/linktracker/test/empty.txt (button: left, redirect: 1)\n\
+[#4] http://localhost/linktracker/test/#top (button: left, redirect: 1)\n\
+[#4] https://www.cia.gov/ (button: left, redirect: 1)\n\
+[#4] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
+[#5] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
+[#5] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#1] http://www.google.com/ (button: key, redirect: 1)\n\
+[#1] http://www.bbc.co.uk/#blq-main (button: key, redirect: 1)\n\
+[#1] https://www.cia.gov/ (button: key, redirect: 1)\n\
+[#1] ftp://ftp.mozilla.org/ (button: key, redirect: 1)\n';
+		
+	</script>
+	
+	<script type="text/javascript">
+		function test1() {
+			manualTests.log('starting test 1');
+			
+			function urlRewriter(linkElm, button, redirect) {
+				var logRef = 1;
+				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+				
+				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+					+ '&redirect=' + (redirect-0)
+					+ '&button=' + button
+					+ '&logref=' + logRef;
+			}
+			
+			new tracking.LinkTracker(urlRewriter);
 		}
 	
-		new tracking.LinkTracker(urlRewriter);
+		function test2() {
+			manualTests.log('starting test 2');
+			
+			function urlRewriter(linkElm, button, redirect) {
+				var logRef = 2;
+				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+				
+				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+					+ '&redirect=' + (redirect-0)
+					+ '&button=' + button
+					+ '&logref=' + logRef;
+			}
+			
+			new tracking.LinkTracker(urlRewriter, {
+				trackMiddleClicks: false,
+				trackRightClicks: true,
+				protocols: ['http', 'https', 'ftp', 'javascript']
+			});
+		}
+		
+		function test3() {
+			manualTests.log('starting test 3');
+			
+			function urlRewriter(linkElm, button, redirect) {
+				var logRef = 3;
+				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+				
+				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+					+ '&redirect=' + (redirect-0)
+					+ '&button=' + button
+					+ '&logref=' + logRef;
+			}
+			
+			new tracking.LinkTracker(urlRewriter, {
+				trackingLevel: 1
+			});
+		}
+		
+		function test4() {
+			manualTests.log('starting test 4');
+			
+			function urlRewriter(linkElm, button, redirect) {
+				var logRef = 4;
+				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+				
+				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+					+ '&redirect=' + (redirect-0)
+					+ '&button=' + button
+					+ '&logref=' + logRef;
+			}
+			
+			new tracking.LinkTracker(urlRewriter, {
+				trackingLevel: 2
+			});
+		}
+		
+		function test5() {
+			manualTests.log('starting test 5');
+			
+			function urlRewriter(linkElm, button, redirect) {
+				var logRef = 5;
+				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+				
+				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+					+ '&redirect=' + (redirect-0)
+					+ '&button=' + button
+					+ '&logref=' + logRef;
+			}
+			
+			new tracking.LinkTracker(urlRewriter, {
+				container: document.getElementById('bbcLinkLi')
+			});
+		}
 	</script>
-	
-	<h2>Ballpool</h2>
-	
-	<p>Here are some HTML elements to click on to test the link tracker</p>
-	
-	<div>
-		<p>Blah blah blah <a href="http://www.google.com">Link to Google</a> blah</p>
-	</div>
-	
-	<p>Here is <a href="http://www.bbc.co.uk"><span>Link to <b>BBC Homepage</b></span></a></p>
-	
-	<p><a href="empty.txt">Link to file in the same dir</a></p>
-	
-	<p><a href="#top">Link to top of the page</a></p>
-	
-	<p><a href="javascript:alert('hi')">JavaScript link</a></p>
-	
+
 	<h2>Notes:</h2>
 	
 	<ul>
@@ -82,7 +285,7 @@
 			Add option to prevent logging same url x times per page
 		</li>
 		<li>
-			Will track clicks even if JavaScript prevents the default
+			Will track clicks even if JavaScript prevents the default (for middle and right clicks)
 		</li>
 		<li>
 			Test fallback event system
