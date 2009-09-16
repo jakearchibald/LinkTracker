@@ -14,6 +14,24 @@
 <body>
 	<h1>Link Tracker Tests</h1>
 	
+	<h2>Setup</h2>
+	
+	<ul>
+		<li><a href="#" id="deleteLogs">Delete Logs</a></li>
+	</ul>
+	
+	<script type="text/javascript">
+		document.getElementById('deleteLogs').onclick = function() {
+			var img = new Image();
+			img.onerror = function() {
+				manualTests.log('logs cleared');
+				delete img.onerror;
+			}
+			img.src = 'tracker.php?action=reset';
+			return false;
+		}
+	</script>
+	
 	<h2>Typical Usage</h2>
 	
 	<ul>
@@ -27,7 +45,10 @@
 	<script type="text/javascript" class="showSrc">
 		function urlRewriter(linkElm, button, redirect) {
 			manualTests.log(linkElm.href + ' ' + button + ' ' + (redirect ? '304' : '204'));
-			return 'http://www.jakearchibald.com/tracking?url=' + encodeURIComponent(linkElm.href) + '&redirect=' + (redirect-0);
+			return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+				+ '&redirect=' + (redirect-0)
+				+ '&button=' + button
+				+ '&logfile=0';
 		}
 	
 		new tracking.LinkTracker(urlRewriter);
@@ -38,10 +59,14 @@
 	<p>Here are some HTML elements to click on to test the link tracker</p>
 	
 	<div>
-		<p>Blah blah blah <a href="http://www.google.com">blah</a> blah</p>
+		<p>Blah blah blah <a href="http://www.google.com">Link to Google</a> blah</p>
 	</div>
 	
-	<p>Here is <a href="http://www.bbc.co.uk"><span>another <span>link</span></span></a></p>
+	<p>Here is <a href="http://www.bbc.co.uk"><span>Link to <span>BBC Homepage</span></span></a></p>
+	
+	<p><a href="empty.txt">Link to file in the same dir</a></p>
+	
+	<p><a href="#top">Link to top of the page</a></p>
 	
 	<h2>Notes:</h2>
 	
