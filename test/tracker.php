@@ -1,33 +1,28 @@
 <?php
 
-$trackingFiles = array(
-	'log1.txt',
-	'log2.txt'
-);
+$trackingFile = 'log.txt';
 
 function useIfSet(&$var, $default) {
 	return isset($var) ? $var : $default;
 }
 
 function removeTrackingFiles() {
-	global $trackingFiles;
-	
-	foreach ($trackingFiles as $fileName) {
-		unlink($fileName);
-	}
+	global $trackingFile;
+	unlink($trackingFile);
 }
 
 function addTrackingEntry() {
-	global $trackingFiles;
+	global $trackingFile;
 	
-	$url      = useIfSet($_GET['url'],    'Unknown URL');
+	$url      = useIfSet($_GET['url'], 'Unknown URL');
 	$button   = useIfSet($_GET['button'], 'Unknown Button');
-	$logFile  = $trackingFiles[ (int)useIfSet($_GET['logfile'], 0) ];
 	$redirect = useIfSet($_GET['redirect'], '0') == '1';
-	$stamp    = '[' . date('Y-m-d H:i:s') . ']';
-	$logMsg   = "$stamp $url (button: $button)\n";
+	$logRef   = useIfSet($_GET['logref'], '0');
+	$stamp    = date('Y-m-d H:i:s');
+	$logMsg   = "[#$logRef] [$stamp] $url (button: $button)\n",
 	
-	file_put_contents( $logFile, $logMsg, FILE_APPEND );
+	
+	file_put_contents( $trackingFile, $logMsg, FILE_APPEND );
 	
 	if ($redirect) {
 		header("Location: $url", false, 302);

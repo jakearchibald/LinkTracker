@@ -40,15 +40,13 @@
 		<li>Middle &amp; left clicks will be logged, right clicks will not</li>
 	</ul>
 	
-	<!-- output visual / interactive parts of your test here -->
-	
 	<script type="text/javascript" class="showSrc">
 		function urlRewriter(linkElm, button, redirect) {
 			manualTests.log(linkElm.href + ' ' + button + ' ' + (redirect ? '304' : '204'));
 			return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
 				+ '&redirect=' + (redirect-0)
 				+ '&button=' + button
-				+ '&logfile=0';
+				+ '&logref=1';
 		}
 	
 		new tracking.LinkTracker(urlRewriter);
@@ -62,11 +60,13 @@
 		<p>Blah blah blah <a href="http://www.google.com">Link to Google</a> blah</p>
 	</div>
 	
-	<p>Here is <a href="http://www.bbc.co.uk"><span>Link to <span>BBC Homepage</span></span></a></p>
+	<p>Here is <a href="http://www.bbc.co.uk"><span>Link to <b>BBC Homepage</b></span></a></p>
 	
 	<p><a href="empty.txt">Link to file in the same dir</a></p>
 	
 	<p><a href="#top">Link to top of the page</a></p>
+	
+	<p><a href="javascript:alert('hi')">JavaScript link</a></p>
 	
 	<h2>Notes:</h2>
 	
@@ -82,13 +82,16 @@
 			Add option to prevent logging same url x times per page
 		</li>
 		<li>
-			Test with floated elements inside the anchor
+			Will track clicks even if JavaScript prevents the default
 		</li>
 		<li>
-			Test with abs positioned links and abs positioned elms inside links
+			Test fallback event system
 		</li>
 		<li>
-			Test with images inside links
+			Test for memory leaks
+		</li>
+		<li>
+			Test links to https &amp; ftp
 		</li>
 	</ul>
 	

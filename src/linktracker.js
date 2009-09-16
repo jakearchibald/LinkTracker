@@ -9,7 +9,10 @@
 var tracking = (function() {
 	// anything attached to 'tracking' will be public
 	var tracking = {},
-		buttons = ['left', 'middle', 'right'];
+		buttons = ['left', 'middle', 'right'],
+		defaultProtocols = ['http', 'https', 'ftp'],
+		// get the protocol, host+port, path+search of a url
+		urlParser = /^([^:]+):\/{0,2}([^\/]*)([^#]*)/;
 	
 	/**
 	@name tracking.LinkTracker
@@ -42,6 +45,12 @@ var tracking = (function() {
 			Middle clicks open links in a background tab in the majority of browsers
 			that support tabbed browsing. If this option is true, each middle click
 			on links will be tracked.
+		@param {Boolean} [opts.trackHostLinks=false] Track links to the current host?
+			Should links pointing the same host & port as the current page be tracked?
+		@param {Boolean} [opts.trackPageLinks=false] Track links pointing within the current page?
+			These links end in # followed by an optional ident, eg http://www.bbc.co.uk#blq-main
+		@param {String[]} [opts.protocols] Which protocols should be logged?
+			By default, the following protocols are logged: ['http', 'https', 'ftp']
 	
 	@example
 		TODO
@@ -53,6 +62,7 @@ var tracking = (function() {
 	  _mUpBtn - the last mouse buttons used in mouseup
 	  _isKey - the last action before clickListener was a key action (1/0)
 	  _bUrl - the function to build the tracking url
+	  _p - a space separated string representing the protocols to track, with a space and the start & end
 	  
 	*/
 	tracking.LinkTracker = function(buildUrl, options) {
@@ -63,6 +73,10 @@ var tracking = (function() {
 		
 		// merge opts with defaults
 		options = this._o = setDefaultOpts( options || {} );
+		
+		// protocols to track
+		this._p = ' ' + options.protocols.join(' ') + ' ';
+		
 		// assign listeners
 		addListener(options.container, 'keyup',   keyupListener,   this);
 		addListener(options.container, 'click',   clickListener,   this);
@@ -78,19 +92,22 @@ var tracking = (function() {
 	}
 	
 	// called when an element is click'd
-	// we use click as it also captures links activated by keyboard
+	// we use click as it also captures links activated by keyboard.
+	// Some browsers also fire a click for right & middle clicks,
+	// however, this is inconsistent so we handle those separately
 	function clickListener(event) {
-		//manualTests.log('click');
+		// manualTests.log('click');
 		// normalise event object for IE
 		event = event || window.event;
 		
 		// convert the button to 'left', 'middle', 'right' or 'key'
 		var button = this._isKey ? 'key' : buttons[this._mUpBtn],
 			linkElm,
-			newUrl;
+			trackUrl,
+			trackingType;
 		
-		// should we ignore this click? (is it from a right or middle click?)
-		if ( !processClick(this, event) ) { return; }
+		// bail if the last action wasn't a key or left click
+		if ( !(this._isKey || this._mUpBtn === 0) ) { return; }
 		
 		// get the link element for this event
 		linkElm = getParentLinkFor(event.target || event.srcElement)
@@ -98,22 +115,23 @@ var tracking = (function() {
 		// if we haven't clicked on a link, exit
 		if (!linkElm) { return;	}
 		
-		// get out new url
-		newUrl = this._bUrl(linkElm, button, true);
+		// look at the url to see how we should track it
+		trackingType = getTrackingType(this, linkElm.href);
+		if (!trackingType) { return; }
 		
-		// replace the current link
-		if (newUrl) {
-			linkElm.href = newUrl;
+		// get new url
+		trackUrl = this._bUrl(linkElm, button, true);
+		
+		// if newUrl is false, don't track
+		if (trackUrl) {
+			if (trackingType == 2) {
+				makeRequest(trackUrl);
+			}
+			else {
+				// replace the current link
+				linkElm.href = trackUrl;
+			}
 		}
-	}
-	
-	// should we process a click event?
-	function processClick(linkTracker, event) {
-		// we want to process it if the click came after a key event, or a left mouse event on the correct element
-		var r = linkTracker._isKey
-			|| linkTracker._mUpBtn === 0 && ( linkTracker._mUpElm == (event.target || event.srcElement) );
-		
-		return r;
 	}
 	
 	// called when an element is mouseup'd
@@ -133,8 +151,7 @@ var tracking = (function() {
 		
 		// need to look at the button pressed
 		// if the left button was pressed, or we're not listening for the button clicked, exit
-		if ( button === 0 || (button == 1 && !opts.trackMiddleClicks) || (button == 2 && !opts.trackRightClicks)
-		) {
+		if ( button === 0 || (button == 1 && !opts.trackMiddleClicks) || (button == 2 && !opts.trackRightClicks) ) {
 			// exit, we're not wanting to track this click
 			return;
 		}
@@ -144,12 +161,46 @@ var tracking = (function() {
 		// if we haven't clicked on a link, exit
 		if (!linkElm) { return; }
 		
+		// look at the url to see how we should track it
+		if ( !getTrackingType(this, linkElm.href) ) { return; }
+		
 		// get tracking url
 		trackUrl = this._bUrl(linkElm, buttons[button], false);
 		
-		if (trackUrl) {
+		// if we've got a url and we should be tracking it, go!
+		if ( trackUrl ) {
 			makeRequest(trackUrl);
 		}
+	}
+	
+	// Show should we track this url? Returns:
+	// 0 - Don't track
+	// 1 - Track, sync or async (depending on mouse button used)
+	// 2 - Track, async (is an internal page link)
+	function getTrackingType(linkTracker, url) {
+		var loc           = location,
+			urlParts      = urlParser.exec(url),
+			protocol      = urlParts[1],
+			host          = urlParts[2],
+			request       = urlParts[3],
+			thisProtocol  = loc.protocol.slice(0,-1),
+			isHttpOrHttps = thisProtocol == 'http' || thisProtocol == 'https',
+			isThisHost    = thisProtocol == protocol && loc.host == host,
+			isThisPage    = isThisHost && (loc.pathname + loc.search) == request;
+		
+		if (
+			// not tracking this protocol?
+			(linkTracker._p.indexOf(' ' + protocol + ' ') == -1)
+			// not tracking this host?
+			|| (isHttpOrHttps && isThisHost && !linkTracker._o.trackHostLinks)
+			// not tracking this page?
+			|| (isHttpOrHttps && isThisPage && !linkTracker._o.trackPageLinks)
+		) {
+			return 0;
+		}
+		
+		// pages to somewhere within this page should be tracked async
+		return isThisPage ? 2 : 1;
 	}
 	
 	// make an async request 
@@ -206,7 +257,10 @@ var tracking = (function() {
 		var mergedOptions = {
 				container: document,
 				trackRightClicks: false,
-				trackMiddleClicks: true
+				trackMiddleClicks: true,
+				trackHostLinks: false,
+				trackPageLinks: false,
+				protocols: defaultProtocols
 			},
 			i;
 		
