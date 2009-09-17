@@ -132,10 +132,10 @@ var tracking = (function() {
 		// normalise event object for IE
 		event = event || window.event;
 		
-		// TODO: left clicks are reported as middle clicks in safari 2
-		
 		var linkElm,
-			button = this._upBtn = tracking.isIe ? (event.button & 1 ? 0 : event.button & 2 ? 2 : 1) : event.button,
+			// using event.which as event.button reports all clicks as middle clicks in Safari 2 & under
+			button = this._upBtn = tracking.isIe ? (event.button & 1 ? 0 : event.button & 2 ? 2 : 1) :
+				event.which !== undefined ? event.which - 1 : event.button,
 			source = this._mUpElm = event.target || event.srcElement,
 			opts = this._o,
 			trackUrl,
@@ -170,7 +170,7 @@ var tracking = (function() {
 		
 		// bail, we don't understand the link (can happen in IE if it gives us the wrong
 		// value from href)
-		if (!urlParts) { return 0; }
+		if (!urlParts) { alert('uh oh'); return 0; }
 		
 		var protocol      = urlParts[1],
 			host          = urlParts[2],
