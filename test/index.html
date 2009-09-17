@@ -12,7 +12,7 @@
 </head>
 
 <body>
-	<iframe name="hiddenIframe" style="height:0;width:0;visibility:hidden;position:absolute;position:fixed;top:0;left:0"></iframe>
+	<iframe name="hiddeniframe" style="height:0;width:0;position:absolute;position:fixed;top:0;left:0"></iframe>
 	
 	<h1>Link Tracker Tests</h1>
 	
@@ -41,13 +41,13 @@
 	</ol>
 
 	<ul id="test1">
-		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
-		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="http://www.google.com/" target="hiddeniframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddeniframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddeniframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
-		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
-		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
-		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+		<li><a href="javascript:void(0)" target="hiddeniframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddeniframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddeniframe">Mozilla FTP</a></li>
 	</ul>
 	
 	<script type="text/javascript" class="showSrc">
@@ -66,10 +66,10 @@
 	</script>
 	
 	<script type="text/javascript">
-		var results1 = '[#1] http://www.google.com/ (button: middle, redirect: 0)\n\
-[#1] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
-[#1] https://www.cia.gov/ (button: middle, redirect: 0)\n\
-[#1] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
+		var results1 = '[#1] http://www.google.com/ (button: middle, redirect: 1)\n\
+[#1] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 1)\n\
+[#1] https://www.cia.gov/ (button: middle, redirect: 1)\n\
+[#1] ftp://ftp.mozilla.org/ (button: middle, redirect: 1)\n\
 [#1] http://www.google.com/ (button: left, redirect: 1)\n\
 [#1] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
 [#1] https://www.cia.gov/ (button: left, redirect: 1)\n\
@@ -100,13 +100,13 @@
 	</ol>
 
 	<ul id="test2">
-		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
-		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="http://www.google.com/" target="hiddeniframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddeniframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddeniframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
-		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
-		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
-		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+		<li><a href="javascript:void(0)" target="hiddeniframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddeniframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddeniframe">Mozilla FTP</a></li>
 	</ul>
 	
 	<script type="text/javascript" class="showSrc">
@@ -156,13 +156,13 @@
 	</ol>
 
 	<ul id="test3">
-		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
-		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="http://www.google.com/" target="hiddeniframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddeniframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddeniframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
-		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
-		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
-		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+		<li><a href="javascript:void(0)" target="hiddeniframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddeniframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddeniframe">Mozilla FTP</a></li>
 	</ul>
 	
 	<script type="text/javascript" class="showSrc">
@@ -207,13 +207,13 @@
 	</ol>
 
 	<ul id="test4">
-		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
-		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="http://www.google.com/" target="hiddeniframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddeniframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddeniframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
-		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
-		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
-		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+		<li><a href="javascript:void(0)" target="hiddeniframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddeniframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddeniframe">Mozilla FTP</a></li>
 	</ul>
 	
 	<script type="text/javascript" class="showSrc">

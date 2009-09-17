@@ -9,7 +9,7 @@
 var tracking = (function() {
 	// anything attached to 'tracking' will be public
 	var tracking = {},
-		buttons = ['left', 'middle', 'right'],
+		buttons = ['left', 'middle', 'right', 'key'],
 		defaultProtocols = ['http', 'https', 'ftp'],
 		// get the protocol, host+port, path+search of a url
 		urlParser = /^([^:]+):\/{0,2}([^\/]*)([^#]*)/;
@@ -69,8 +69,7 @@ var tracking = (function() {
 	  
 	  _o - options object populated with defaults + settings from constructor
 	  _mUpElm - the last elm mouseup picked up
-	  _mUpBtn - the last mouse buttons used in mouseup
-	  _isKey - the last action before clickListener was a key action (1/0)
+	  _upBtn - the last button used, number 0=left mouse, 1=middle mouse, 2=right mouse, 3=keyboard key
 	  _bUrl - the function to build the tracking url
 	  _p - a space separated string representing the protocols to track, with a space and the start & end
 	  
@@ -97,7 +96,7 @@ var tracking = (function() {
 	function keyupListener() {
 		//manualTests.log('key');
 		// clear mouse click details - the next click may come from keyboard
-		this._isKey = 1;
+		this._upBtn = 3;
 	}
 	
 	// called when an element is click'd
@@ -110,49 +109,20 @@ var tracking = (function() {
 		event = event || window.event;
 		
 		// convert the button to 'left', 'middle', 'right' or 'key'
-		var button = this._isKey ? 'key' : buttons[this._mUpBtn],
-			linkElm,
+		var linkElm,
 			trackUrl,
-			trackingType,
-			resetFunction,
-			originalHref;
+			trackingType;
 		
 		// bail if the last action wasn't a key or left click
-		if ( !(this._isKey || this._mUpBtn === 0) ) { return; }
+		if ( !(this._upBtn === 3 || this._upBtn === 0) ) { return; }
 		
-		// get the link element for this event
-		linkElm = getParentLinkFor(event.target || event.srcElement)
-		
-		// if we haven't clicked on a link, exit
-		if (!linkElm) { return;	}
-		
-		// look at the url to see how we should track it
-		trackingType = getTrackingType(this, linkElm.href);
-		if (!trackingType) { return; }
-		
-		// get new url
-		trackUrl = this._bUrl(linkElm, button, true);
-		originalHref = attr(linkElm, 'href');
-		
-		resetFunction = function() {
-			if (linkElm) {
-				attr(linkElm, 'href', originalHref);
-				linkElm._rewritten = 0;
-			}
-			resetFunction = undefined;
-		}
-		
-		// if newUrl is false, don't track
-		if (trackUrl) {
-			if (trackingType == 2) {
-				makeRequest(trackUrl);
-			}
-			else if (!linkElm._rewritten) {
-				// replace the current link
-				linkElm.href = trackUrl;
-				linkElm._rewritten = 1;
-				setTimeout(resetFunction, 100);
-			}
+		// get the link element that's been clicked
+		linkElm = getParentLinkFor(event.target || event.srcElement);
+		trackingType = getTrackingType(this, linkElm);
+
+		if (trackingType) {
+			trackUrl = this._bUrl(linkElm, buttons[this._upBtn], trackingType == 1);
+			makeRequest(trackUrl, linkElm, trackingType == 1);
 		}
 	}
 	
@@ -162,14 +132,14 @@ var tracking = (function() {
 		// normalise event object for IE
 		event = event || window.event;
 		
+		// TODO: left clicks are reported as middle clicks in safari 2
+		
 		var linkElm,
-			button = this._mUpBtn = tracking.isIe ? (event.button & 1 ? 0 : event.button & 2 ? 2 : 1) : event.button,
+			button = this._upBtn = tracking.isIe ? (event.button & 1 ? 0 : event.button & 2 ? 2 : 1) : event.button,
 			source = this._mUpElm = event.target || event.srcElement,
 			opts = this._o,
-			trackUrl;
-		
-		// this isn't a key event
-		this._isKey = 0;
+			trackUrl,
+			trackingType;
 		
 		// need to look at the button pressed
 		// if the left button was pressed, or we're not listening for the button clicked, exit
@@ -180,29 +150,29 @@ var tracking = (function() {
 		
 		// get the link element that's been clicked
 		linkElm = getParentLinkFor(source);
-		// if we haven't clicked on a link, exit
-		if (!linkElm) { return; }
-		
-		// look at the url to see how we should track it
-		if ( !getTrackingType(this, linkElm.href) ) { return; }
-		
-		// get tracking url
-		trackUrl = this._bUrl(linkElm, buttons[button], false);
-		
-		// if we've got a url and we should be tracking it, go!
-		if ( trackUrl ) {
-			makeRequest(trackUrl);
+		trackingType = getTrackingType(this, linkElm);
+
+		if (trackingType) {
+			trackUrl = this._bUrl(linkElm, buttons[button], trackingType == 1);
+			makeRequest(trackUrl, linkElm, trackingType == 1);
 		}
 	}
 	
 	// Show should we track this url? Returns:
 	// 0 - Don't track
-	// 1 - Track, sync or async (depending on mouse button used)
-	// 2 - Track, async (is an internal page link)
-	function getTrackingType(linkTracker, url) {
+	// 1 - Track sync
+	// 2 - Track async
+	function getTrackingType(linkTracker, linkElm) {
+		if (!linkElm) { return 0; }
+		
 		var loc           = location,
-			urlParts      = urlParser.exec(url),
-			protocol      = urlParts[1],
+			urlParts      = urlParser.exec(linkElm.href);
+		
+		// bail, we don't understand the link (can happen in IE if it gives us the wrong
+		// value from href)
+		if (!urlParts) { return 0; }
+		
+		var protocol      = urlParts[1],
 			host          = urlParts[2],
 			request       = urlParts[3],
 			thisProtocol  = loc.protocol.slice(0,-1),
@@ -222,8 +192,8 @@ var tracking = (function() {
 			return 0;
 		}
 		
-		// pages to somewhere within this page should be tracked async
-		return isThisPage ? 2 : 1;
+		// do it async for right clicks or this page links
+		return (isThisPage || linkTracker._upBtn === 2) ? 2 : 1;
 	}
 	
 	// get / set attributes
@@ -240,10 +210,29 @@ var tracking = (function() {
 		elm.setAttribute(attrName, val);
 	}
 	
-	// make an async request 
-	function makeRequest(url) {
-		// TODO: check for memory leaks
-		new Image().src = url;
+	// make a request
+	// If sync the href of the link is changed to 'url', then changed back in a few ms
+	function makeRequest(url, linkElm, sync) {
+		if (sync) {
+			var originalHref = attr(linkElm, 'href'),
+				resetFunction = function() {
+					if (linkElm) {
+						attr(linkElm, 'href', originalHref);
+						linkElm._rewritten = 0;
+					}
+					resetFunction = undefined;
+				};
+			
+			if (!linkElm._rewritten) {
+				// replace the current link
+				linkElm.href = url;
+				linkElm._rewritten = 1;
+				setTimeout(resetFunction, 100);
+			}
+		}
+		else {
+			new Image().src = url;
+		}
 	}
 	
 	// gets the parent link element for an element, or returns null
