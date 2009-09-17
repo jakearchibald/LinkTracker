@@ -170,7 +170,7 @@ var tracking = (function() {
 		
 		// bail, we don't understand the link (can happen in IE if it gives us the wrong
 		// value from href)
-		if (!urlParts) { alert('uh oh'); return 0; }
+		if (!urlParts) { return 0; }
 		
 		var protocol      = urlParts[1],
 			host          = urlParts[2],
