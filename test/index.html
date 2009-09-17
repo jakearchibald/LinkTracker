@@ -41,8 +41,8 @@
 	</ol>
 
 	<ul id="test1">
-		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
 		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
 		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
@@ -99,8 +99,8 @@
 	</ol>
 
 	<ul id="test2">
-		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
 		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
 		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
@@ -155,8 +155,8 @@
 	</ol>
 
 	<ul id="test3">
-		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
 		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
 		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
@@ -202,12 +202,12 @@
 		<li><a href="#" id="test4">Start test 4</a></li>
 		<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
 		<li>Mouse over the links below, tracker.php shouldn't appear in the urls</li>
-		<li><a href="#" id="results4" class="checkResults">Check results</a></li>
+		<li><a href="javascript:void(0)" id="results4" class="checkResults">Check results</a></li>
 	</ol>
 
 	<ul id="test4">
-		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
-		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="http://www.google.com/" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk/#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
 		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
 		<li><a href="#top">Internal link</a></li>
 		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
@@ -244,8 +244,7 @@
 [#4] ' + location.href.replace(/#[^#]*$/, '').replace(/\?[^\?]*$/, '').replace(/\/[^\/]*$/, '/') + 'empty.txt (button: left, redirect: 1)\n\
 [#4] ' + location.href.replace(/#[^#]*$/, '') + '#top (button: left, redirect: 1)\n\
 [#4] https://www.cia.gov/ (button: left, redirect: 1)\n\
-[#4] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
-[#4] ' + location.href.replace(/#[^#]*$/, '') + '# (button: left, redirect: 1)\n';
+[#4] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n';
 	</script>
 
 	<h2>Notes:</h2>
@@ -264,18 +263,6 @@
 		<li>
 			Will track clicks even if JavaScript prevents the default (for middle and right clicks)
 		</li>
-		<li>
-			Test fallback event system
-		</li>
-		<li>
-			Test for memory leaks
-		</li>
-		<li>
-			Test links to https &amp; ftp
-		</li>
-		<li>
-			Need to fix localhost tests
-		</li>
 	</ul>
 	
 	<script type="text/javascript">		
@@ -291,7 +278,7 @@
 				req = new XMLHttpRequest();
 			}
 			
-			req.open('GET', url, true);
+			req.open('GET', url + '?' + Math.random(), true);
 			
 			req.onreadystatechange = function () {
 				if (req.readyState != 4) { return; }
@@ -307,7 +294,7 @@
 					var img = new Image();
 					img.onerror = function() {
 						manualTests.log('logs cleared');
-						delete img.onerror;
+						img.onerror = null;
 						img = null;
 					}
 					img.src = 'tracker.php?action=reset';
