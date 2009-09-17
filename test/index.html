@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html id="top">
+<html>
 <head>
 	<title>Link Tracker Tests</title>
 	<script type="text/javascript" src="includes/manualtests.js"></script>
@@ -12,36 +12,35 @@
 </head>
 
 <body>
+	<iframe name="hiddenIframe" style="height:0;width:0;visibility:hidden;position:absolute;position:fixed;top:0;left:0"></iframe>
+	
 	<h1>Link Tracker Tests</h1>
 	
-	<h2>Test</h2>
+	<p>
+		<strong>
+			These tests must be run on a webserver with PHP
+		</strong>
+	</p>
 	
-	<p>To test the system, do the following:</p>
-	
-	<ol>
-		<li><a href="#" id="deleteLogs">Delete log.txt</a></li>
-		<li>
-			For each of these tests (in order):
-			<a href="#" id="test1">test1</a>,
-			<a href="#" id="test2">test2</a>,
-			<a href="#" id="test3">test3</a>,
-			<a href="#" id="test4">test4</a>,
-			<a href="#" id="test5">test5</a>
-			<ol>
-				<li>Refresh the page</li>
-				<li>Click a test link above</li>
-				<li>Click each of the links below using the right mouse button</li>
-				<li>Click each of the links below using the middle mouse button (page will open in a background tab)</li>
-				<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
-			</ol>
-		</li>
-		<li>
-			Repeat the test for 'test1', but rather than press mouse buttons,
-			tab through the links pressing enter on each
-		</li>
-	</ol>
+	<h2>Test 1</h2>
 	
 	<ul>
+		<li>Tracking restricted to below set of links</li>
+		<li>Tracks middle &amp; left clicks</li>
+		<li>Tracks external urls only</li>
+	</ul>
+	
+	<ol>
+		<li><a href="#" class="deleteLogs">Delete log.txt</a></li>
+		<li>Click each of the links below using the right mouse button</li>
+		<li>Click each of the links below using the middle mouse button (page will open in a background tab)</li>
+		<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
+		<li>Click each of the links below using they keyboard (page will open in a hidden iframe)</li>
+		<li>Mouse over the links below, tracker.php shouldn't appear in the urls</li>
+		<li><a href="#" id="results1" class="checkResults">Check results</a></li>
+	</ol>
+
+	<ul id="test1">
 		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
 		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
 		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
@@ -51,81 +50,23 @@
 		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
 	</ul>
 	
-	<iframe name="hiddenIframe" style="height:0;width:0;visibility:hidden;position:absolute"></iframe>
-	
-	<script type="text/javascript">		
-		var tests = ['test1', 'test2', 'test3', 'test4', 'test5'];
-		
-		document.getElementById('deleteLogs').onclick = function() {
-			var img = new Image();
-			img.onerror = function() {
-				manualTests.log('logs cleared');
-				delete img.onerror;
-			}
-			img.src = 'tracker.php?action=reset';
-			return false;
+	<script type="text/javascript" class="showSrc">
+		function urlRewriter1(linkElm, button, redirect) {
+			var logRef = 1;
+			manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+			
+			return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+				+ '&redirect=' + (redirect-0)
+				+ '&button=' + button
+				+ '&logref=' + logRef;
 		}
-		
-		var i = tests.length;
-		while (i--) {
-			document.getElementById(tests[i]).onclick = function() {
-				window[ this.id ]();
-				return false;
-			}
-		}
+		new tracking.LinkTracker(urlRewriter1, {
+			container: document.getElementById('test1')
+		});
 	</script>
 	
-	<h2>Check Results</h2>
-	
-	<ol>
-		<li>Run ALL tests above</li>
-		<li><a href="#" id="checkResults">Check Results</a></li>
-		<li>See logger for results</li>
-	</ol>
-	
 	<script type="text/javascript">
-		function xhrRequest(url, callback) {
-			var req;
-			
-			if (window.ActiveXObject) {
-				req = new ActiveXObject("MSXML2.XMLHTTP");
-			}
-			else {
-				req = new XMLHttpRequest();
-			}
-			
-			req.open('GET', url, true);
-			
-			req.onreadystatechange = function () {
-				if (req.readyState != 4) { return; }
-				callback(req);
-				req.onreadystatechange = new Function;
-			}
-			req.send();
-		}
-		
-		document.getElementById('checkResults').onclick = function() {
-			xhrRequest('log.txt', function(req) {
-				var results = req.responseText.split(/^/m),
-					expectedResults = expectedOutput.split(/^/m),
-					len = Math.max(results.length, expectedResults.length),
-					i = 0;
-					
-				for (; i < len; i++) {
-					if (results[i] != expectedResults[i]) {
-						manualTests.log('Mismatch on line ' + (i+1) + ', expected:');
-						manualTests.log(expectedResults[i] || '--blank--');
-						manualTests.log('But got:');
-						manualTests.log(results[i] || '--blank--');
-						return;
-					}
-				}
-				manualTests.log('Test passed!');
-			})
-			return false;
-		}
-		
-		var expectedOutput = '[#1] http://www.google.com/ (button: middle, redirect: 0)\n\
+		var results1 = '[#1] http://www.google.com/ (button: middle, redirect: 0)\n\
 [#1] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
 [#1] https://www.cia.gov/ (button: middle, redirect: 0)\n\
 [#1] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
@@ -133,7 +74,60 @@
 [#1] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
 [#1] https://www.cia.gov/ (button: left, redirect: 1)\n\
 [#1] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
-[#2] http://www.google.com/ (button: right, redirect: 0)\n\
+[#1] http://www.google.com/ (button: key, redirect: 1)\n\
+[#1] http://www.bbc.co.uk/#blq-main (button: key, redirect: 1)\n\
+[#1] https://www.cia.gov/ (button: key, redirect: 1)\n\
+[#1] ftp://ftp.mozilla.org/ (button: key, redirect: 1)\n';
+	</script>
+	
+	<h2>Test 2</h2>
+	
+	<ul>
+		<li>Tracking restricted to below set of links</li>
+		<li>Tracks right &amp; left clicks</li>
+		<li>Tracks external urls only</li>
+		<li>Tracks javascript: urls</li>
+	</ul>
+	
+	<ol>
+		<li><a href="#" class="deleteLogs">Delete log.txt</a></li>
+		<li>Click each of the links below using the right mouse button</li>
+		<li>Click each of the links below using the middle mouse button (page will open in a background tab)</li>
+		<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
+		<li>Mouse over the links below, tracker.php shouldn't appear in the urls</li>
+		<li><a href="#" id="results2" class="checkResults">Check results</a></li>
+	</ol>
+
+	<ul id="test2">
+		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="#top">Internal link</a></li>
+		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+	</ul>
+	
+	<script type="text/javascript" class="showSrc">
+		function urlRewriter2(linkElm, button, redirect) {
+			var logRef = 2;
+			manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+			
+			return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+				+ '&redirect=' + (redirect-0)
+				+ '&button=' + button
+				+ '&logref=' + logRef;
+		}
+		new tracking.LinkTracker(urlRewriter2, {
+			trackMiddleClicks: false,
+			trackRightClicks: true,
+			protocols: ['http', 'https', 'ftp', 'javascript'],
+			container: document.getElementById('test2')
+		});
+	</script>
+	
+	<script type="text/javascript">
+		var results2 = '[#2] http://www.google.com/ (button: right, redirect: 0)\n\
 [#2] http://www.bbc.co.uk/#blq-main (button: right, redirect: 0)\n\
 [#2] javascript:void(0) (button: right, redirect: 0)\n\
 [#2] https://www.cia.gov/ (button: right, redirect: 0)\n\
@@ -142,97 +136,89 @@
 [#2] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
 [#2] javascript:void(0) (button: left, redirect: 1)\n\
 [#2] https://www.cia.gov/ (button: left, redirect: 1)\n\
-[#2] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
-[#3] http://www.google.com/ (button: middle, redirect: 0)\n\
-[#3] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
-[#3] http://localhost/linktracker/test/empty.txt (button: middle, redirect: 0)\n\
-[#3] https://www.cia.gov/ (button: middle, redirect: 0)\n\
-[#3] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
-[#3] http://www.google.com/ (button: left, redirect: 1)\n\
-[#3] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
-[#3] http://localhost/linktracker/test/empty.txt (button: left, redirect: 1)\n\
-[#3] https://www.cia.gov/ (button: left, redirect: 1)\n\
-[#3] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
-[#4] http://www.google.com/ (button: middle, redirect: 0)\n\
-[#4] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
-[#4] http://localhost/linktracker/test/empty.txt (button: middle, redirect: 0)\n\
-[#4] http://localhost/linktracker/test/#top (button: middle, redirect: 0)\n\
-[#4] https://www.cia.gov/ (button: middle, redirect: 0)\n\
-[#4] ftp://ftp.mozilla.org/ (button: middle, redirect: 0)\n\
-[#4] http://www.google.com/ (button: left, redirect: 1)\n\
-[#4] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
-[#4] http://localhost/linktracker/test/empty.txt (button: left, redirect: 1)\n\
-[#4] http://localhost/linktracker/test/#top (button: left, redirect: 1)\n\
-[#4] https://www.cia.gov/ (button: left, redirect: 1)\n\
-[#4] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
-[#5] http://www.bbc.co.uk/#blq-main (button: middle, redirect: 0)\n\
-[#5] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
-[#1] http://www.google.com/ (button: key, redirect: 1)\n\
-[#1] http://www.bbc.co.uk/#blq-main (button: key, redirect: 1)\n\
-[#1] https://www.cia.gov/ (button: key, redirect: 1)\n\
-[#1] ftp://ftp.mozilla.org/ (button: key, redirect: 1)\n';
-		
+[#2] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n';
+	</script>
+	
+	<h2>Test 3</h2>
+	
+	<ul>
+		<li>Tracking restricted to below set of links</li>
+		<li>Tracks middle &amp; left clicks</li>
+		<li>Tracks external and internal links (to other pages)</li>
+	</ul>
+	
+	<ol>
+		<li><a href="#" class="deleteLogs">Delete log.txt</a></li>
+		<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
+		<li>Mouse over the links below, tracker.php shouldn't appear in the urls</li>
+		<li><a href="#" id="results3" class="checkResults">Check results</a></li>
+	</ol>
+
+	<ul id="test3">
+		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="#top">Internal link</a></li>
+		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+	</ul>
+	
+	<script type="text/javascript" class="showSrc">
+		function urlRewriter3(linkElm, button, redirect) {
+			var logRef = 3;
+			manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
+			
+			return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
+				+ '&redirect=' + (redirect-0)
+				+ '&button=' + button
+				+ '&logref=' + logRef;
+		}
+		new tracking.LinkTracker(urlRewriter3, {
+			trackingLevel: 1,
+			container: document.getElementById('test3')
+		});
 	</script>
 	
 	<script type="text/javascript">
-		function test1() {
-			manualTests.log('starting test 1');
-			
-			function urlRewriter(linkElm, button, redirect) {
-				var logRef = 1;
-				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
-				
-				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
-					+ '&redirect=' + (redirect-0)
-					+ '&button=' + button
-					+ '&logref=' + logRef;
-			}
-			
-			new tracking.LinkTracker(urlRewriter);
-		}
+		var results3 = '[#3] http://www.google.com/ (button: left, redirect: 1)\n\
+[#3] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#3] ' + location.href.replace(/#[^#]*$/, '').replace(/\?[^\?]*$/, '').replace(/\/[^\/]*$/, '/') + 'empty.txt (button: left, redirect: 1)\n\
+[#3] https://www.cia.gov/ (button: left, redirect: 1)\n\
+[#3] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n';
+	</script>
 	
-		function test2() {
-			manualTests.log('starting test 2');
-			
-			function urlRewriter(linkElm, button, redirect) {
-				var logRef = 2;
-				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
-				
-				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
-					+ '&redirect=' + (redirect-0)
-					+ '&button=' + button
-					+ '&logref=' + logRef;
-			}
-			
-			new tracking.LinkTracker(urlRewriter, {
-				trackMiddleClicks: false,
-				trackRightClicks: true,
-				protocols: ['http', 'https', 'ftp', 'javascript']
-			});
-		}
-		
-		function test3() {
-			manualTests.log('starting test 3');
-			
-			function urlRewriter(linkElm, button, redirect) {
-				var logRef = 3;
-				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
-				
-				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
-					+ '&redirect=' + (redirect-0)
-					+ '&button=' + button
-					+ '&logref=' + logRef;
-			}
-			
-			new tracking.LinkTracker(urlRewriter, {
-				trackingLevel: 1
-			});
-		}
-		
+	<h2>Test 4</h2>
+	
+	<ul>
+		<li>Tracking all links on the page</li>
+		<li>Tracks middle &amp; left clicks</li>
+		<li>Tracks external, internal links, and links to the current page</li>
+	</ul>
+	
+	<ol>
+		<li>Refresh the page</li>
+		<li><a href="#" class="deleteLogs">Delete log.txt</a></li>
+		<li><a href="#" id="test4">Start test 4</a></li>
+		<li>Click each of the links below using the left mouse button (page will open in a hidden iframe)</li>
+		<li>Mouse over the links below, tracker.php shouldn't appear in the urls</li>
+		<li><a href="#" id="results4" class="checkResults">Check results</a></li>
+	</ol>
+
+	<ul id="test4">
+		<li><a href="http://www.google.com" target="hiddenIframe">Google</a></li>
+		<li id="bbcLinkLi"><a href="http://www.bbc.co.uk#blq-main" target="hiddenIframe"><span><span>BBC Homepage</span></span></a></li>
+		<li><a href="empty.txt" target="hiddenIframe">Empty file</a></li>
+		<li><a href="#top">Internal link</a></li>
+		<li><a href="javascript:void(0)" target="hiddenIframe">JavaScript link</a></li>
+		<li><a href="https://www.cia.gov/" target="hiddenIframe">CIA (https)</a></li>
+		<li><a href="ftp://ftp.mozilla.org/" target="hiddenIframe">Mozilla FTP</a></li>
+	</ul>
+	
+	<script type="text/javascript" class="showSrc">
 		function test4() {
-			manualTests.log('starting test 4');
-			
-			function urlRewriter(linkElm, button, redirect) {
+			manualTests.log('Starting test 4');
+			function urlRewriter4(linkElm, button, redirect) {
 				var logRef = 4;
 				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
 				
@@ -241,29 +227,25 @@
 					+ '&button=' + button
 					+ '&logref=' + logRef;
 			}
-			
-			new tracking.LinkTracker(urlRewriter, {
+			new tracking.LinkTracker(urlRewriter4, {
 				trackingLevel: 2
 			});
 		}
-		
-		function test5() {
-			manualTests.log('starting test 5');
-			
-			function urlRewriter(linkElm, button, redirect) {
-				var logRef = 5;
-				manualTests.log('[' + logRef + '] ' + linkElm.href + ' (' + button + ', ' + (redirect ? 'sync' : 'async') + ')');
-				
-				return 'tracker.php?action=log&url=' + encodeURIComponent(linkElm.href)
-					+ '&redirect=' + (redirect-0)
-					+ '&button=' + button
-					+ '&logref=' + logRef;
-			}
-			
-			new tracking.LinkTracker(urlRewriter, {
-				container: document.getElementById('bbcLinkLi')
-			});
+	</script>
+	
+	<script type="text/javascript">
+		document.getElementById('test4').onclick = function() {
+			test4();
+			return false;
 		}
+	
+		var results4 = '[#4] http://www.google.com/ (button: left, redirect: 1)\n\
+[#4] http://www.bbc.co.uk/#blq-main (button: left, redirect: 1)\n\
+[#4] ' + location.href.replace(/#[^#]*$/, '').replace(/\?[^\?]*$/, '').replace(/\/[^\/]*$/, '/') + 'empty.txt (button: left, redirect: 1)\n\
+[#4] ' + location.href.replace(/#[^#]*$/, '') + '#top (button: left, redirect: 1)\n\
+[#4] https://www.cia.gov/ (button: left, redirect: 1)\n\
+[#4] ftp://ftp.mozilla.org/ (button: left, redirect: 1)\n\
+[#4] ' + location.href.replace(/#[^#]*$/, '') + '# (button: left, redirect: 1)\n';
 	</script>
 
 	<h2>Notes:</h2>
@@ -295,6 +277,67 @@
 			Need to fix localhost tests
 		</li>
 	</ul>
+	
+	<script type="text/javascript">		
+		var links = document.getElementsByTagName('a');
+		
+		function xhrRequest(url, callback) {
+			var req;
+			
+			if (window.ActiveXObject) {
+				req = new ActiveXObject("MSXML2.XMLHTTP");
+			}
+			else {
+				req = new XMLHttpRequest();
+			}
+			
+			req.open('GET', url, true);
+			
+			req.onreadystatechange = function () {
+				if (req.readyState != 4) { return; }
+				callback(req);
+				req.onreadystatechange = new Function;
+			}
+			req.send();
+		}
+		
+		for (var i = 0, len = links.length; i < len; i++) {
+			if (links[i].className == 'deleteLogs') {
+				links[i].onclick = function() {
+					var img = new Image();
+					img.onerror = function() {
+						manualTests.log('logs cleared');
+						delete img.onerror;
+						img = null;
+					}
+					img.src = 'tracker.php?action=reset';
+					return false;
+				}
+			} else if (links[i].className == 'checkResults') {
+				links[i].onclick = function() {
+					var that = this;
+					xhrRequest('log.txt', function(req) {
+						var results = req.responseText.split(/^/m),
+							expectedResults = window[that.id].split(/^/m),
+							len = Math.max(results.length, expectedResults.length),
+							i = 0;
+						
+						for (; i < len; i++) {
+							if (results[i] != expectedResults[i]) {
+								manualTests.log('Mismatch on line ' + (i+1) + ', expected:');
+								manualTests.log(expectedResults[i] || '--blank--');
+								manualTests.log('But got:');
+								manualTests.log(results[i] || '--blank--');
+								return;
+							}
+						}
+						manualTests.log('Test passed!');
+					})
+					return false;
+				}
+			}
+		}
+	</script>
 	
 	<script type="text/javascript">manualTests.showSrc();</script>
 	<script type="text/javascript">manualTests.log('Logging enabled');</script>
