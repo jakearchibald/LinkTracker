@@ -87,6 +87,7 @@
 		<li>Tracks right &amp; left clicks</li>
 		<li>Tracks external urls only</li>
 		<li>Tracks javascript: urls</li>
+		<li>Opera disables right-click events by default, this test will fail in Opera</li>
 	</ul>
 	
 	<ol>
@@ -297,15 +298,15 @@
 						img.onerror = null;
 						img = null;
 					}
-					img.src = 'tracker.php?action=reset';
+					img.src = 'tracker.php?action=reset&' + Math.random();
 					return false;
 				}
 			} else if (links[i].className == 'checkResults') {
 				links[i].onclick = function() {
 					var that = this;
 					xhrRequest('log.txt', function(req) {
-						var results = req.responseText.split(/^/m),
-							expectedResults = window[that.id].split(/^/m),
+						var results = req.responseText.split(/\n/),
+							expectedResults = window[that.id].split(/\n/),
 							len = Math.max(results.length, expectedResults.length),
 							i = 0;
 						
