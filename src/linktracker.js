@@ -27,7 +27,7 @@ var tracking = (function() {
 		
 		linkElm  - The link element that was clicked
 		
-		button 	 - This will be 'left', 'middle', 'right' or 'key'. The first
+		button   - This will be 'left', 'middle', 'right' or 'key'. The first
 				   3 refer to mouse buttons, 'key' means the keyboard was used
 				   to activate the link
 				  
@@ -55,7 +55,15 @@ var tracking = (function() {
 			By default, the following protocols are logged: ['http', 'https', 'ftp']
 	
 	@example
-		TODO
+		function createTrackingLink(linkElm, button, redirect) {
+			return 'http://www.bbc.co.uk/mytracker.php?url='
+				+ encodeURIComponent(linkElm.href)
+				+ '&redirect=' + (redirect-0)
+				+ '&button=' + button;
+		}
+		new tracking.LinkTracker(createTrackingLink, {
+			container: document.getElementById('relatedLinks')
+		});
 	*/
 	/* 'private' properties:
 	  
