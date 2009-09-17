@@ -286,7 +286,8 @@
 				callback(req);
 				req.onreadystatechange = new Function;
 			}
-			req.send();
+			// need to send something to keep firefox 2 happy
+			req.send('');
 		}
 		
 		for (var i = 0, len = links.length; i < len; i++) {
