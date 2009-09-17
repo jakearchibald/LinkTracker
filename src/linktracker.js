@@ -91,7 +91,6 @@ var tracking = (function() {
 		addListener(options.container, 'keyup',   keyupListener,   this);
 		addListener(options.container, 'click',   clickListener,   this);
 		addListener(options.container, 'mouseup', mouseupListener, this);
-		// assign unload cleanup for IE
 	}
 	
 	// called when a key is released
@@ -266,8 +265,25 @@ var tracking = (function() {
 		var onname = 'on' + name,
 			oldFunc;
 		
-		function callCallback() {
-			return callback.apply(context || this, arguments);
+		function callCallback(event) {
+			if (callback.call) {
+				return callback.call(context || this, event);
+			} else {
+				// IE5.01 doesn't support function.apply :(
+				// fix from http://hexmen.com/blog/2006/12/revisiting-functionprototypeapply-for-ie5/
+				var thisArg = context || this;
+					
+				thisArg._applyTmp = callback;
+				
+				try {
+					return thisArg._applyTmp(event);
+				} finally {
+					try {
+						thisArg._applyTmp = undefined;
+						delete thisArg._applyTmp;
+					} catch (e) {}
+				}
+			}
 		}
 		
 		if (elm.addEventListener) {
