@@ -53,6 +53,11 @@ var tracking = (function() {
 			    within the current page
 		@param {String[]} [opts.protocols] Which protocols should be logged?
 			By default, the following protocols are logged: ['http', 'https', 'ftp']
+		@param {Boolean} [opts.forceAsync=false] Should all tracking requests be made async?
+			This means your returned url never needs to redirect. However, you will
+			lose some tracking data if the browser leaves the page before the
+			async request is made.
+			
 	
 	@example
 		function createTrackingLink(linkElm, button, redirect) {
@@ -193,7 +198,7 @@ var tracking = (function() {
 		}
 		
 		// do it async for right clicks or this page links
-		return (isThisPage || linkTracker._upBtn === 2) ? 2 : 1;
+		return (linkTracker._o.forceAsync || isThisPage || linkTracker._upBtn === 2) ? 2 : 1;
 	}
 	
 	// get / set attributes
@@ -302,7 +307,8 @@ var tracking = (function() {
 				trackRightClicks: false,
 				trackMiddleClicks: true,
 				trackingLevel: 0,
-				protocols: defaultProtocols
+				protocols: defaultProtocols,
+				forceAsync: false
 			},
 			i;
 		
